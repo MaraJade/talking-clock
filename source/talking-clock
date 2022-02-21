@@ -17,7 +17,7 @@
 readonly debug=false
 readonly program="talking-clock"
 readonly player="aplay"
-readonly config="$HOME/.config/talking-clock.conf"
+readonly config="/home/marajade/.config/talking-clock/talking-clock.conf"
 
 freq=0
 main_dir="/usr/share"
@@ -50,66 +50,88 @@ stop_clock()
 
 clock()
 {
-    while :
-    do
-        delay=$((60 -  $(date +%s) % 60));
-        sleep $delay
+    #while :
+    #do
+    #delay=$((60 -  $(date +%s) % 60));
+    #sleep $delay
 
-        timestamp=($(date "+%l %M %S"))
-        hour=${timestamp[0]#0}
-        minute=${timestamp[1]#0}
+    notify-send -u critical "Time Check!" "Mindfulness moment: Pause. Write down what you're doing. Take a deep breath. Stand up. Do a squat. Continue!"
 
-        if [[ $debug == true ]]; then
-            echo "$hour:$minute:${timestamp[2]}" >&2
+    timestamp=($(date "+%l %M %p"))
+    #read -r hour minute ampm <<< $(date "+%I %M %p")
+    hour=${timestamp[0]#0}
+    minute=${timestamp[1]#0}
+    ampm=${timestamp[2]}
+
+    freq=30
+
+    curvolume=($(awk -F"[][]" '/Left:/ { print $2 }' <(amixer -D pulse sget Master)))
+    if [[ ( $ampm == "AM" && ( $hour -gt 10 )) || ( $ampm == "PM" && ( hour -lt 5 )) ]]; then 
+        if [[ ${curvolume:0:2} -gt 50 ]]; 
+        then
+          amixer -D pulse sset Master 50%
+        else
+          amixer -D pulse sset Master 30%
         fi
+    elif [[ ( $ampm == "AM" && ( $hour -lt 10 )) || ( $ampm == "PM" && ( hour -gt 5 )) ]]; then
+        amixer -D pulse sset Master 30%
+    fi
 
-        if [[ $minute -eq 0 ]];then
-            $player -q "$main_dir/$program/bang.wav"
-            $player -q "$main_dir/$program/$hour.wav"
-            $player -q "$main_dir/$program/0.wav"
-            $player -q "$main_dir/$program/0.wav"
-        elif [[ $minute -eq 10 && $freq -eq 5 ]]; then
-            $player -q "$main_dir/$program/$hour.wav"
-            $player -q "$main_dir/$program/10.wav"
-        elif [[ $minute -eq 15  && ( $freq -eq 15 || $freq -eq 5 ) ]]; then
-            $player -q "$main_dir/$program/quarter.wav"
-            $player -q "$main_dir/$program/past.wav"
-            $player -q "$main_dir/$program/$hour.wav"
-        elif [[ $minute -eq 20 && $freq -eq 5 ]]; then
-            $player -q "$main_dir/$program/$hour.wav"
-            $player -q "$main_dir/$program/20.wav"
-        elif [[ $minute -eq 25 && $freq -eq 5 ]]; then
-            $player -q "$main_dir/$program/$hour.wav"
-            $player -q "$main_dir/$program/20.wav"
-            $player -q "$main_dir/$program/5.wav"
-        elif [[ $minute -eq 30 && ( $freq -eq 30 || $freq -eq 15 || $freq -eq 5 ) ]]; then
-            $player -q "$main_dir/$program/bang.wav"
-            $player -q "$main_dir/$program/$hour.wav"
-            $player -q "$main_dir/$program/30.wav"
-        elif [[ $minute -eq 35 && $freq -eq 5 ]]; then
-            $player -q "$main_dir/$program/$hour.wav"
-            $player -q "$main_dir/$program/30.wav"
-            $player -q "$main_dir/$program/5.wav"
-        elif [[ $minute -eq 40 && $freq -eq 5 ]]; then
-            $player -q "$main_dir/$program/$hour.wav"
-            $player -q "$main_dir/$program/40.wav"
-        elif [[ $minute -eq 45  &&  ( $freq -eq 15  ||  $freq -eq 5 ) ]]; then
-            $player -q "$main_dir/$program/quarter.wav"
-            $player -q "$main_dir/$program/to.wav"
-            if [[ $hour -eq 12 ]];then
-                $player -q "$main_dir/$program/1.wav"
-            else
-                $player -q "$main_dir/$program/$((hour + 1)).wav"
-            fi
-        elif [[ $minute -eq 50  &&  $freq -eq 5 ]]; then
-            $player -q "$main_dir/$program/$hour.wav"
-            $player -q "$main_dir/$program/50.wav"
-        elif [[ $minute -eq 55 &&  $freq -eq 5 ]]; then
-            $player -q "$main_dir/$program/$hour.wav"
-            $player -q "$main_dir/$program/50.wav"
-            $player -q "$main_dir/$program/5.wav"
-        fi
-    done
+
+    if [[ $debug == true ]]; then
+      echo "$hour:$minute:${timestamp[2]}" >&2
+    fi
+
+    if [[ $minute -eq 0 ]];then
+      $player -q "$main_dir/$program/bang.wav"
+      $player -q "$main_dir/$program/$hour.wav"
+      $player -q "$main_dir/$program/0.wav"
+      $player -q "$main_dir/$program/0.wav"
+    #elif [[ $minute -eq 10 && $freq -eq 5 ]]; then
+    #  $player -q "$main_dir/$program/$hour.wav"
+    #  $player -q "$main_dir/$program/10.wav"
+    #elif [[ $minute -eq 15  && ( $freq -eq 15 || $freq -eq 5 ) ]]; then
+    #  $player -q "$main_dir/$program/quarter.wav"
+    #  $player -q "$main_dir/$program/past.wav"
+    #  $player -q "$main_dir/$program/$hour.wav"
+    #elif [[ $minute -eq 20 && $freq -eq 5 ]]; then
+    #  $player -q "$main_dir/$program/$hour.wav"
+    #  $player -q "$main_dir/$program/20.wav"
+    #elif [[ $minute -eq 25 && $freq -eq 5 ]]; then
+    #  $player -q "$main_dir/$program/$hour.wav"
+    #  $player -q "$main_dir/$program/20.wav"
+    #  $player -q "$main_dir/$program/5.wav"
+    elif [[ $minute -eq 30 && ( $freq -eq 30 || $freq -eq 15 || $freq -eq 5 ) ]]; then
+      $player -q "$main_dir/$program/bang.wav"
+      $player -q "$main_dir/$program/$hour.wav"
+      $player -q "$main_dir/$program/30.wav"
+    #elif [[ $minute -eq 35 && $freq -eq 5 ]]; then
+    #  $player -q "$main_dir/$program/$hour.wav"
+    #  $player -q "$main_dir/$program/30.wav"
+    #  $player -q "$main_dir/$program/5.wav"
+    #elif [[ $minute -eq 40 && $freq -eq 5 ]]; then
+    #  $player -q "$main_dir/$program/$hour.wav"
+    #  $player -q "$main_dir/$program/40.wav"
+    #elif [[ $minute -eq 45  &&  ( $freq -eq 15  ||  $freq -eq 5 ) ]]; then
+    #  $player -q "$main_dir/$program/quarter.wav"
+    #  $player -q "$main_dir/$program/to.wav"
+    #  if [[ $hour -eq 12 ]];then
+    #    $player -q "$main_dir/$program/1.wav"
+    #  else
+    #    $player -q "$main_dir/$program/$((hour + 1)).wav"
+    #  fi
+    #elif [[ $minute -eq 50  &&  $freq -eq 5 ]]; then
+    #  $player -q "$main_dir/$program/$hour.wav"
+    #  $player -q "$main_dir/$program/50.wav"
+    #elif [[ $minute -eq 55 &&  $freq -eq 5 ]]; then
+    #  $player -q "$main_dir/$program/$hour.wav"
+    #  $player -q "$main_dir/$program/50.wav"
+    #  $player -q "$main_dir/$program/5.wav"
+    fi
+
+    amixer -D pulse sset Master ${curvolume}
+
+    #done
 }
 
 config()
@@ -151,9 +173,9 @@ else
     [[ $1 != "" ]] && print_help
 fi
 
-config
+#config
 
-stop_clock
-echo "starting $program"
+#stop_clock
+#echo "starting $program"
 
-clock &
+clock
