@@ -65,17 +65,17 @@ clock()
 
     freq=30
 
-    curvolume=($(awk -F"[][]" '/Left:/ { print $2 }' <(amixer -D pulse sget Master)))
-    if [[ ( $ampm == "AM" && ( $hour -gt 10 )) || ( $ampm == "PM" && ( hour -lt 5 )) ]]; then 
-        if [[ ${curvolume:0:2} -gt 50 ]]; 
-        then
-          amixer -D pulse sset Master 50%
-        else
-          amixer -D pulse sset Master 30%
-        fi
-    elif [[ ( $ampm == "AM" && ( $hour -lt 10 )) || ( $ampm == "PM" && ( hour -gt 5 )) ]]; then
-        amixer -D pulse sset Master 30%
-    fi
+    # curvolume=($(awk -F"[][]" '/Left:/ { print $2 }' <(amixer -D pulse sget Master)))
+    # if [[ ( $ampm == "AM" && ( $hour -gt 10 )) || ( $ampm == "PM" && ( hour -lt 5 )) ]]; then 
+    #     if [[ ${curvolume:0:2} -gt 50 ]]; 
+    #     then
+    #       amixer -D pulse sset Master 50%
+    #     else
+    #       amixer -D pulse sset Master 30%
+    #     fi
+    # elif [[ ( $ampm == "AM" && ( $hour -lt 10 )) || ( $ampm == "PM" && ( hour -gt 5 )) ]]; then
+    #     amixer -D pulse sset Master 30%
+    # fi
 
 
     if [[ $debug == true ]]; then
